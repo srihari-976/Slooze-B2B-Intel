@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Geography | Slooze B2B Intel</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'Inter', system-ui, sans-serif; }
+    body { background: #030712; }
+    .card { background: #111827; border-radius: 12px; border: 1px solid #1f2937; }
+    .kpi-icon { width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; border-radius: 10px; }
+    .badge-gold { background: rgba(245,158,11,0.15); color: #fbbf24; }
+    .badge-silver { background: rgba(156,163,175,0.15); color: #d1d5db; }
+    .badge-unverified { background: rgba(239,68,68,0.15); color: #fca5a5; }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #111827; }
+    ::-webkit-scrollbar-thumb { background: #374151; border-radius: 3px; }
+    .heatmap-cell { text-align: center; padding: 6px 8px; font-size: 0.8rem; }
+    input[type="range"] { accent-color: #8b5cf6; }
+    select, input:not([type="range"]) { background: #1f2937; border: 1px solid #374151; color: #e5e7eb; border-radius: 8px; padding: 8px 12px; font-size: 0.875rem; outline: none; }
+    select:focus, input:focus { border-color: #8b5cf6; }
+    .filter-pill { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; transition: all 0.2s; }
+    .filter-pill.active { background: rgba(139,92,246,0.2); color: #c4b5fd; border: 1px solid #8b5cf6; }
+    .filter-pill:not(.active) { background: #1f2937; color: #9ca3af; border: 1px solid #374151; }
+    .filter-pill:hover { border-color: #6b7280; }
+    .dt-container { background: transparent !important; }
+    .dataTables_wrapper .dataTables_filter input { background: #1f2937; border: 1px solid #374151; color: #e5e7eb; border-radius: 8px; }
+    table.dataTable { background: transparent !important; color: #e5e7eb !important; }
+    table.dataTable tbody tr { background: transparent !important; }
+    table.dataTable tbody tr:hover { background: rgba(139,92,246,0.08) !important; }
+    table.dataTable tbody tr.odd { background: rgba(255,255,255,0.02) !important; }
+    table.dataTable thead { background: #1f2937 !important; }
+    table.dataTable thead th { color: #d1d5db !important; border-bottom: 1px solid #374151 !important; }
+    table.dataTable tbody td { border-bottom: 1px solid #1f2937 !important; }
+    .dataTables_wrapper .dataTables_paginate .paginate_button { color: #9ca3af !important; border: 1px solid #374151 !important; border-radius: 6px !important; }
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current { background: #8b5cf6 !important; border-color: #8b5cf6 !important; color: #fff !important; }
+    .dataTables_wrapper .dataTables_length select { background: #1f2937; color: #e5e7eb; border: 1px solid #374151; }
+    .dataTables_info { color: #6b7280 !important; }
+    .dt-length label, .dt-search label { color: #9ca3af; }
+    .anomaly-row td { background: rgba(127,29,29,0.5) !important; }
+    .dual-range { position: relative; height: 36px; }
+    .dual-range input[type="range"] { position: absolute; width: 100%; pointer-events: none; -webkit-appearance: none; height: 4px; top: 16px; background: transparent; z-index: 2; }
+    .dual-range input[type="range"]::-webkit-slider-thumb { pointer-events: all; -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: #8b5cf6; cursor: pointer; border: 2px solid #fff; }
+    .dual-range input[type="range"]::-moz-range-thumb { pointer-events: all; width: 18px; height: 18px; border-radius: 50%; background: #8b5cf6; cursor: pointer; border: 2px solid #fff; }
+    .range-track { position: absolute; top: 16px; height: 4px; border-radius: 2px; background: #374151; width: 100%; }
+    .range-fill { position: absolute; top: 16px; height: 4px; border-radius: 2px; background: #8b5cf6; }
+  </style>
+</head>
+<body class="pt-20 pb-4 min-h-screen text-gray-200">
+
+<nav class="fixed top-0 left-0 right-0 z-50 bg-gray-950/95 backdrop-blur-md border-b border-gray-800">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16">
+      <div class="flex items-center gap-3">
+        <i class="fas fa-cube text-purple-400 text-2xl"></i>
+        <span class="text-xl font-bold text-white tracking-tight">Slooze <span class="text-purple-400">B2B</span> Intel</span>
+      </div>
+      <div class="flex items-center gap-1">
+        <a href="index.html" class="nav-link" data-page="index"><i class="fas fa-chart-pie mr-1.5"></i>Dashboard</a>
+        <a href="geo.html" class="nav-link" data-page="geo"><i class="fas fa-globe-asia mr-1.5"></i>Geography</a>
+        <a href="products.html" class="nav-link" data-page="products"><i class="fas fa-box-open mr-1.5"></i>Products</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <div class="card p-5"><h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4"><i class="fas fa-city text-purple-400 mr-2"></i>Top 10 Cities by Supplier Count</h3><div class="chart-container" style="position:relative;height:320px"><canvas id="chart-cities"></canvas></div></div>
+    <div class="card p-5"><h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4"><i class="fas fa-map-marked-alt text-cyan-400 mr-2"></i>State Heatmap</h3><div class="overflow-auto max-h-[360px]"><table class="w-full text-xs" id="heatmap-table"><thead class="text-gray-500 uppercase tracking-wider"><tr><th class="text-left p-2">State</th><th class="text-right p-2">Suppliers</th><th class="text-right p-2">Avg Price</th><th class="text-right p-2">Avg Rating</th><th class="text-left p-2">Top Category</th><th class="text-center p-2">Density</th></tr></thead><tbody id="heatmap-body"></tbody></table></div></div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="card p-5"><h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4"><i class="fas fa-chart-bar text-purple-400 mr-2"></i>Region-wise Category Split</h3><div class="chart-container" style="position:relative;height:320px"><canvas id="chart-region-category"></canvas></div></div>
+    <div class="card p-5"><h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4"><i class="fas fa-list-ol text-cyan-400 mr-2"></i>Top States Ranking</h3><div class="overflow-auto max-h-[360px]"><table class="w-full text-xs" id="ranking-table"><thead class="text-gray-500 uppercase tracking-wider"><tr><th class="text-center p-2 w-10">#</th><th class="text-left p-2">State</th><th class="text-right p-2">Suppliers</th><th class="text-right p-2">Avg Price</th><th class="text-right p-2">Avg Rating</th><th class="text-center p-2">Gold</th></tr></thead><tbody id="ranking-body"></tbody></table></div></div>
+  </div>
+</div>
+
+<footer class="mt-12 pb-6 text-center text-gray-600 text-xs border-t border-gray-800 pt-6">
+  <i class="fas fa-database mr-1 text-purple-500"></i> Slooze B2B Intel &mdash; Data Engineering Dashboard &mdash; <span id="product-count-footer">0</span> products indexed
+</footer>
+<script>
+const DATA = {
+  "products": [
+    {
+      "product_id": "TI-9821569",
+      "name": "Made in IndiaFlexitech IndiaJg3300 Laser Welding Maching - Efficiency: HighMOQ-1",
+      "price_min": 0.01,
+      "price_max": 0.01,
+      "currency": "USD",
+      "moq": 1,
+      "unit": null,
+      "supplier_name": "Flexitech India",
+      "supplier_rating": 4.2,
+      "supplier_location_raw": "Mumbai, Maharashtra",
+      "verified_supplier": false,
+      "response_rate": 76.3,
+      "certifications": [],
+      "keywords": [
+        "industrial machinery",
+        "made",
+        "indiaflexitech",
+        "indiajg3300"
+      ],
+      "category": "Industrial Machinery",
+      "subcategory": null,
+      "description": "Condition - New; Efficiency - High; Cooling Method - Air Cooling",
+      "listing_url": "https://www.tradeindia.com/products/jg3300-laser-welding-maching-c9821569.html",
+      "scraped_at": 1780156980.636597,
+      "supplier_city": "Mumbai",
+      "supplier_state": "Maharashtra",
+      "supplier_region": "West India",
+      "supplier_country": "India",
+      "supplier_location": "Mumbai, Maharashtra, India",
+      "supplier_tier": "Unverified",
+      "quality_score": 95.9,
+      "original_currency": "INR",
+      "original_price_min": 1.0,
+      "original_price_max": 1.0
+    },
+    {
+      "product_id": "TI-12326032",
+      "name": "Made in IndiaMacpower Cnc Machines LimitedNX 20 MONO CNC MachineProduct Type - C",
+      "price_min": null,
+      "price_max": null,
+      "currency": "INR",
+      "moq": null,
+      "unit": null,
+      "supplier_name": "Macpower Cnc Machines Limited",
+      "supplier_rating": 5.0,
+      "supplier_location_raw": "Ahmedabad, Gujarat",
+      "verified_supplier": false,
+      "response_rate": 66.1,
+      "certifications": [],
+      "keywords": [
+        "industrial machinery",
+        "made",
+        "indiamacpower",
+        "cnc"
+      ],
+      "category": "Industrial Machinery",
+      "subcategory": null,
+      "description": "Product Type - CNC Turning Machine; Bar Feeder - Optional; Bar Feeder - Optional",
+      "listing_url": "https://www.tradeindia.com/products/nx-20-mono-cnc-machine-c12326032.html",
+      "scraped_at": 1780156982.917843,
+      "supplier_city": "Ahmedabad",
+      "supplier_state": "Gujarat",
+      "supplier_region": "West India",
+      "supplier_country": "India",
+      "supplier_location": "Ahmedabad, Gujarat, India",
+      "supplier_tier": "Unverified",
+      "quality_score": 91.0
+    },
+    {
+      "product_id": "TI-11349936",
+      "name": "Made in IndiaAmt Global SolutionsIndustrial Cnc Turning Centre Machine - Power S",
+      "price_min": 0.01,
+      "price_max": 0.01,
+      "currency": "USD",
+      "moq": 1,
+      "unit": null,
+      "supplier_name": "Amt Global Solutions",
+      "supplier_rating": 3.6,
+      "supplier_location_raw": "India",
+      "verified_supplier": true,
+      "response_rate": 67.4,
+      "certifications": [],
+      "keywords": [
+        "industrial machinery",
+        "made",
+        "indiaamt",
+        "global"
+      ],
+      "category": "Industrial Machinery",
+      "subcategory": null,
+      "description": "General Use - Industrial; Material - Other, Mild steel/Stainless steel; Automatic - Yes",
+      "listing_url": "https://www.tradeindia.com/products/industrial-cnc-turning-centre-machine-c11349936.html",
+      "scraped_at": 1780156984.9122639,
+      "supplier_city": "India",
+      "supplier_state": null,
+      "supplier_region": null,
+      "supplier_country": null,
+      "supplier_location": "Vadodara, Gujarat, India",
+      "supplier_tier": "Silver",
+      "quality_score": 98.6,
+      "original_currency": "INR",
+      "original_price_min": 1.0,
+      "original_price_max": 1.0
+    },
+    {
+      "product_id": "TI-9627561",
+      "name": "Made in IndiaSamarpan Engineering & Marketing Pvt. Ltd.High Speed Tl-250 Precisi",
+      "price_min": 0.01,
+      "price_max": 0.01,
+      "currency": "USD",
+      "moq": 1,
+      "unit": null,
+      "supplier_name": "Samarpan Engineering & Marketing Pvt. Ltd.",
+      "supplier_rating": 4.0,
+      "supplier_location_raw": "High Speed Tl-250 Precision Cnc Lathe Machine at Best Price in Indore | Samarpan Engineering & Marketing Pvt. Ltd.",
+      "verified_supplier": false,
+      "response_rate": 84.0,
+      "certifications": [],
+      "keywords": [
+        "industrial machinery",
+        "made",
+        "indiasamarpan",
+        "engineering"
+      ],
+      "category": "Industrial Machinery",
+      "subcategory": null,
+      "description": "General Use - Industrial; Material - Stainless Steel; Computerized - No",
+      "listing_url": "https://www.tradeindia.com/products/tl-250-precision-cnc-lathe-machine-c9627561.html",
+      "scraped_at": 1780156986.6685877,
+      "supplier_city": null,
+      "supplier_state": "High Speed Tl",
+      "supplier_region": null,
+      "supplier_country": "250 Precision Cnc Lathe Machine at Best Price in Indore | Samarpan Engineering & Marketing Pvt. Ltd.",
+      "supplier_location": "Indore, Madhya Pradesh, India",
+      "supplier_tier": "Unverified",
+      "quality_score": 75.0,
+      "original_currency": "INR",
+      "original_price_min": 1.0,
+      "original_price_max": 1.0
+    },
+    {
+      "product_id": "TI-3581371",
+      "name": "Made in IndiaPatson Machines Pvt. Ltd.White Cnc Shift Fork Machining SpmPrice:10",
+      "price_min": 0.01,
+      "price_max": 110523.0,
+      "currency": "USD",
+      "moq": 1,
+      "unit": null,
+      "supplier_name": "Patson Machines Pvt. Ltd.",
+      "supplier_rating": 4.6,
+      "supplier_location_raw": "Cnc Shift Fork Machining Spm at 10500000.00 INR in Pune | Patson Machines Pvt. Ltd.",
+      "verified_supplier": true,
+      "response_rate": 87.5,
+      "certifications": [],
+      "keywords": [
+        "industrial machinery",
+        "made",
+        "indiapatson",
+        "machines"
+      ],
+      "category": "Industrial Machinery",
+      "subcategory": null,
+      "description": "Color - White; Product Type - CNC Shift Fork Machining SPM; Material - Aluminum",
+      "listing_url": "https://www.tradeindia.com/products/cnc-shift-fork-machining-spm-c3581371.html",
+      "scraped_at": 1780156988.6787002,
+      "supplier_city": "Cnc Shift Fork Machining Spm at 10500000.00 INR in Pune | Patson Machines Pvt. Ltd.",
+      "supplier_state": "Maharashtra",
+      "supplier_region": "West India",
+      "supplier_country": "India",
+      "supplier_location": "Pune, Maharashtra, India",
+      "supplier_tier": "Gold",
+      "quality_score": 95.4,
+      "original_currency": "INR",
+      "original_price_min": 1.0,
+      "original_price_max": 10500000.0
+    },
+    {
+      "product_id": "TI-9962945",
+      "name": "Made in IndiaKwality EnterprisesCnc Turning Center - General Use: IndustrialMOQ-",
+      "price_min": 0.01,
+      "price_max": 0.01,
+      "currency": "USD",
+      "moq": 1,
+      "unit": null,
+      "supplier_name": "Kwality Enterprises",
+      "supplier_rating": 5.0,
+      "supplier_location_raw": "Cnc Turning Center - General Use: Industrial at Best Price in New Delhi | Kwality Enterprises",
+      "verified_supplier": false,
+      "response_rate": 68.4,
+      "certifications": [],
+      "keywords": [
+        "industrial machinery",
+        "made",
+        "indiakwality",
+        "enterprisescnc"
+      ],
+      "category": "Industrial Machinery",
+      "subcategory": null,
+      "description": "General Use - Industrial; Material - Stainless Steel; Type - CNC Router",
+      "listing_url": "https://www.tradeindia.com/products/cnc-turning-center-c9962945.html",
+      "scraped_at": 1780156990.7933154,
+      "supplier_city": null,
+      "supplier_state": "Cnc Turning Center",
+      "supplier_region": null,
+      "supplier_country": "General Use: Industrial at Best Price in New Delhi | Kwality Enterprises",
+      "supplier_location": "Delhi, Delhi, India",
+      "supplier_tier": "Unverified",
+      "quality_score": 88.7,
+      "original_currency": "INR",
+      "original_price_min": 1.0,
+      "original_price_max": 1.0
+    },
+    {
+      "product_id": "TI-10353143",
+      "name": "Made in IndiaKirti EnterprisesL7808Cv-Dg St Microelectronic Linear Voltage Regul",
+      "price_min": 0.11,
+      "price_max": 1.05,
+      "currency": "USD",
+      "moq": 100,
+      "unit": null,
+      "supplier_name": "Kirti Enterprises",
+      "supplier_rating": 3.7,
+      "supplier_location_raw": "L7808cv-dg St Microelectronic Linear Voltage Regulators - Color: Black at Best Price in Delhi | Kirti Enterprises",
+      "verified_supplier": false,
+      "response_rate": 64.2,
+      "certifications": [],
+      "keywords": [
+        "electronics",
+        "made",
+        "indiakirti",
+        "enterprisesl7808cv-dg"
+      ],
+      "category": "Electronics",
+      "subcategory": null,
+      "description": "Usage - Electronic  Devices; Power Supply - Electrical; Supply Voltage - 10 - 24 Volt (v)",
+      "listing_url": "https://www.tradeindia.com/products/l7808cv-dg-st-microelectronic-linear-voltage-regulators-c10353143.html",
+      "scraped_at": 1780156997.795572,
+      "supplier_city": "L7808cv",
+      "supplier_state": "dg St Microelectronic Linear Voltage Regulators",
+      "supplier_region": null,
+      "supplier_country": "Color: Black at Best Price in Delhi | Kirti Enterprises",
+      "supplier_location": "Delhi, Delhi, India",
+      "supplier_tier": "Unverified",
+      "quality_score": 80.3,
+      "original_currency": "INR",
+      "original_price_min": 10.0,
+      "original_price_max": 100.0
+    },
+    {
+      "product_id": "TI-10210637",
+      "name": "Made in IndiaIndus TechnologiesLc Power Filter - Application: ElectronicsMOQ-100",
+      "price_min": 1.05,
+      "price_max": 1.05,
+      "currency": "USD",
+      "moq": 100,
+      "unit": null,
+      "supplier_name": "Indus Technologies",
+      "supplier_rating": 4.4,
+      "supplier_location_raw": "Ahmedabad, Gujarat",
+      "verified_supplier": false,
+      "response_rate": 86.0,
+      "certifications": [],
+      "keywords": [
+        "electronics",
+        "made",
+        "indiaindus",
+        "technologieslc"
+      ],
+      "category": "Electronics",
+      "subcategory": null,
+      "description": "Power Supply - Electric; Usage - Industrial; Application - Electronics",
+      "listing_url": "https://www.tradeindia.com/products/lc-power-filter-c10210637.html",
+      "scraped_at": 1780156999.7729726,
+      "supplier_city": "Ahmedabad",
+      "supplier_state": "Gujarat",
+      "supplier_region": "West India",
+      "supplier_country": "India",
+      "supplier_location": "Ahmedabad, Gujarat, India",
+      "supplier_tier": "Unverified",
+      "quality_score": 86.3,
+      "original_currency": "INR",
+      "original_price_min": 100.0,
+      "original_price_max": 100.0
+    },
+    {
+      "product_id": "TI-9717665",
+      "name": "Made in IndiaHarsh PrintsTextile Dangal Simba Fabric - 200-240 GSM Washable Cott",
+      "price_min": 0.02,
+      "price_max": 2.53,
+      "currency": "USD",
+      "moq": 100,
+      "unit": null,
+      "supplier_name": "Harsh Prints",
+      "supplier_rating": 4.6,
+      "supplier_location_raw": "Textile Dangal Simba Fabric - 200-240 GSM Washable Cotton Blend, Available in Various Colors - Versatile Plain Texture for Textiles & Garments at 230.00 INR in Surat | Harsh Prints",
+      "verified_supplier": true,
+      "response_rate": 73.4,
+      "certifications": [],
+      "keywords": [
+        "textiles",
+        "made",
+        "indiaharsh",
+        "printstextile"
+      ],
+      "category": "Textiles",
+      "subcategory": null,
+      "description": "Color - Different Available; Texture - Plain; Weight - 200-240 GSM (gm/2)",
+      "listing_url": "https://www.tradeindia.com/products/textile-dangal-simba-fabric-c9717665.html",
+      "scraped_at": 1780157005.9413424,
+      "supplier_city": "Textile Dangal Simba Fabric",
+      "supplier_state": "200",
+      "supplier_region": null,
+      "supplier_country": "240 GSM Washable Cotton Blend,Available in Various Colors,Versatile Plain Texture for Textiles & Garments at 230.00 INR in Surat | Harsh Prints",
+      "supplier_location": "Surat, Gujarat, India",
+      "supplier_tier": "Gold",
+      "quality_score": 74.6,
+      "original_currency": "INR",
+      "original_price_min": 2.0,
+      "original_price_max": 240.0
+    },
+    {
+      "product_id": "TI-12258899",
+      "name": "Made in IndiaImpoexpo Lion Roar Pvt LtdTextile Red FabricMOQ-100MeterWidth - 44-",
+      "price_min": 0.46,
+      "price_max": 1.05,
+      "currency": "USD",
+      "moq": 100,
+      "unit": null,
+      "supplier_name": "Impoexpo Lion Roar Pvt Ltd",
+      "supplier_rating": 4.6,
+      "supplier_location_raw": "Mumbai, Maharashtra",
+      "verified_supplier": false,
+      "response_rate": 79.3,
+      "certifications": [],
+      "keywords": [
+        "textiles",
+        "made",
+        "indiaimpoexpo",
+        "lion"
+      ],
+      "category": "Textiles",
+      "subcategory": null,
+      "description": "Width - 44-58 inches; Application - Dressmaking, Crafts, Upholstery; Fabric Material - Cotton Polyester Blend",
+      "listing_url": "https://www.tradeindia.com/products/textile-red-fabric-c12258899.html",
+      "scraped_at": 1780157008.4109268,
+      "supplier_city": "Mumbai",
+      "supplier_state": "Maharashtra",
+      "supplier_region": "West India",
+      "supplier_country": "India",
+      "supplier_location": "Mumbai, Maharashtra, India",
+      "supplier_tier": "Unverified",
+      "quality_score": 98.7,
+      "original_currency": "INR",
+      "original_price_min": 44.0,
+      "original_price_max": 100.0
+    },
+    {
+      "product_id": "TI-73483",
+      "name": "Made in IndiaA. B. EnterprisesIndustrial Food ChemicalsMOQ-50Kilograms/Kilograms",
+      "price_min": 0.53,
+      "price_max": 1.05,
+      "currency": "USD",
+      "moq": 50,
+      "unit": null,
+      "supplier_name": "A. B. Enterprises",
+      "supplier_rating": 3.6,
+      "supplier_location_raw": "Industrial Food Chemicals at 120.00 INR at Best Price in Mumbai, Maharashtra | A. B. Enterprises",
+      "verified_supplier": false,
+      "response_rate": 71.3,
+      "certifications": [],
+      "keywords": [
+        "chemicals",
+        "made",
+        "indiaa."
+      ],
+      "category": "Chemicals",
+      "subcategory": null,
+      "description": "Physical Form - Powder; Assay - 99.8%; Water Solubility - Fully soluble",
+      "listing_url": "https://www.tradeindia.com/products/industrial-food-chemicals-c73483.html",
+      "scraped_at": 1780157015.4832146,
+      "supplier_city": null,
+      "supplier_state": "Industrial Food Chemicals at 120.00 INR at Best Price in Mumbai",
+      "supplier_region": null,
+      "supplier_country": "Maharashtra | A. B. Enterprises",
+      "supplier_location": "Mumbai, Maharashtra, India",
+      "supplier_tier": "Unverified",
+      "quality_score": 98.2,
+      "original_currency": "INR",
+      "original_price_min": 50.0,
+      "original_price_max": 99.8
+    },
+    {
+      "product_id": "TI-11491501",
+      "name": "Made in IndiaShubh Life Science2-Methoxy-5-Sulfamoyl Benzoic Acid - Cas No: 579 ",
+      "price_min": 0.01,
+      "price_max": 8.42,
+      "currency": "USD",
+      "moq": 1,
+      "unit": null,
+      "supplier_name": "Shubh Life Science",
+      "supplier_rating": 3.7,
+      "supplier_location_raw": "Ahmedabad",
+      "verified_supplier": true,
+      "response_rate": 60.4,
+      "certifications": [],
+      "keywords": [
+        "chemicals",
+        "made",
+        "indiashubh",
+        "life"
+      ],
+      "category": "Chemicals",
+      "subcategory": null,
+      "description": "Purity - 98%; Form - Powder; Smell - Other, Normal",
+      "listing_url": "https://www.tradeindia.com/products/2-methoxy-5-sulfamoyl-benzoic-acid-c11491501.html",
+      "scraped_at": 1780157017.67157,
+      "supplier_city": "Ahmedabad",
+      "supplier_state": "Gujarat",
+      "supplier_region": "West India",
+      "supplier_country": "India",
+      "supplier_location": "Ahmedabad, Gujarat, India",
+      "supplier_tier": "Silver",
+      "quality_score": 92.0,
+      "original_currency": "INR",
+      "original_price_min": 1.0,
+      "original_price_max": 800.0
+    },
+    {
+      "product_id": "TI-10069212",
+      "name": "Zibo Lemon Innovation Investment Co., LtdDiffusion dialysis - waste acid recover",
+      "price_min": 0.01,
+      "price_max": 10.53,
+      "currency": "USD",
+      "moq": 1,
+      "unit": null,
+      "supplier_name": "Zibo Lemon Innovation Investment Co., Ltd",
+      "supplier_rating": 4.3,
+      "supplier_location_raw": "Hyderabad",
+      "verified_supplier": true,
+      "response_rate": 94.4,
+      "certifications": [],
+      "keywords": [
+        "chemicals",
+        "zibo",
+        "lemon",
+        "innovation",
+        "investment"
+      ],
+      "category": "Chemicals",
+      "subcategory": null,
+      "description": "Zibo Lemon Innovation Investment Co., LtdDiffusion dialysis - waste acid recover",
+      "listing_url": "https://www.tradeindia.com/products/diffusion-dialysis-waste-acid-recovery-technology-c10069212.html",
+      "scraped_at": 1780157019.3337781,
+      "supplier_city": "Hyderabad",
+      "supplier_state": "Telangana",
+      "supplier_region": "South India",
+      "supplier_country": "India",
+      "supplier_location": "Hyderabad, Telangana, India",
+      "supplier_tier": "Gold",
+      "quality_score": 86.3,
+      "original_currency": "INR",
+      "original_price_min": 1.0,
+      "original_price_max": 1000.0
+    },
+    {
+      "product_id": "TI-11981639",
+      "name": "Made in IndiaIndochem EnterprisesIC 666 ISO TANK CLEANERPrice:150 INR (Approx.)/",
+      "price_min": 0.12,
+      "price_max": 1.58,
+      "currency": "USD",
+      "moq": 50,
+      "unit": null,
+      "supplier_name": "Indochem Enterprises",
+      "supplier_rating": 4.4,
+      "supplier_location_raw": "Ic 666 Iso Tank Cleaner at 150.00 INR in Mumbai | Indochem Enterprises",
+      "verified_supplier": false,
+      "response_rate": 83.9,
+      "certifications": [],
+      "keywords": [
+        "chemicals",
+        "made",
+        "indiaindochem",
+        "enterprisesic"
+      ],
+      "category": "Chemicals",
+      "subcategory": null,
+      "description": "Form - Liquid; Ph Level - Alkaline, pH 11aEUR\"13; Shape - Other, Liquid",
+      "listing_url": "https://www.tradeindia.com/products/ic-666-iso-tank-cleaner-c11981639.html",
+      "scraped_at": 1780157020.9183328,
+      "supplier_city": "Ic 666 Iso Tank Cleaner at 150.00 INR in Mumbai | Indochem Enterprises",
+      "supplier_state": "Maharashtra",
+      "supplier_region": "West India",
+      "supplier_country": "India",
+      "supplier_location": "Mumbai, Maharashtra, India",
+      "supplier_tier": "Unverified",
+      "quality_score": 94.4,
+      "original_currency": "INR",
+      "original_price_min": 11.0,
+      "original_price_max": 150.0
+    },
+    {
+      "product_id": "TI-949571",
+      "name": "Made in IndiaA. B. EnterprisesEthylene Diamine - CAS 107-15-3, Clear Viscous Liq",
+      "price_min": 0.01,
+      "price_max": 11.05,
+      "currency": "USD",
+      "moq": 1,
+      "unit": null,
+      "supplier_name": "A. B. Enterprises",
+      "supplier_rating": 4.2,
+      "supplier_location_raw": "Ethylene Diamine at 1239.00 INR in Mumbai, Maharashtra | A. B. Enterprises",
+      "verified_supplier": true,
+      "response_rate": 78.5,
+      "certifications": [],
+      "keywords": [
+        "chemicals",
+        "made",
+        "indiaa."
+      ],
+      "category": "Chemicals",
+      "subcategory": null,
+      "description": "Made in IndiaA. B. EnterprisesEthylene Diamine - CAS 107-15-3, Clear Viscous Liq",
+      "listing_url": "https://www.tradeindia.com/products/ethylene-diamine-c949571.html",
+      "scraped_at": 1780157022.8160093,
+      "supplier_city": null,
+      "supplier_state": "Ethylene Diamine at 1239.00 INR in Mumbai",
+      "supplier_region": null,
+      "supplier_country": "Maharashtra | A. B. Enterprises",
+      "supplier_location": "Mumbai, Maharashtra, India",
+      "supplier_tier": "Gold",
+      "quality_score": 88.5,
+      "original_currency": "INR",
+      "original_price_min": 1.0,
+      "original_price_max": 1050.0
+    },
+    {
+      "product_id": "TI-11910830",
+      "name": "Made in IndiaTech SupportAgriculture Equipment - Material: MetalMOQ-1Unit/UnitsS",
+      "price_min": 0.01,
+      "price_max": 0.01,
+      "currency": "USD",
+      "moq": 1,
+      "unit": null,
+      "supplier_name": "Tech Support",
+      "supplier_rating": 4.8,
+      "supplier_location_raw": "Agriculture Equipment - Material: Metal at Best Price in Pune | Tech Support",
+      "verified_supplier": false,
+      "response_rate": 65.4,
+      "certifications": [],
+      "keywords": [
+        "agriculture",
+        "made",
+        "indiatech",
+        "supportagriculture"
+      ],
+      "category": "Agriculture",
+      "subcategory": null,
+      "description": "Shape - Standard; Product Type - Agriculture Equipment; General Use - Agricultural Operations",
+      "listing_url": "https://www.tradeindia.com/products/agriculture-equipment-c11910830.html",
+      "scraped_at": 1780157029.080524,
+      "supplier_city": null,
+      "supplier_state": "Agriculture Equipment",
+      "supplier_region": null,
+      "supplier_country": "Material: Metal at Best Price in Pune | Tech Support",
+      "supplier_location": "Pune, Maharashtra, India",
+      "supplier_tier": "Unverified",
+      "quality_score": 91.3,
+      "original_currency": "INR",
+      "original_price_min": 1.0,
+      "original_price_max": 1.0
+    },
+    {
+      "product_id": "TI-10522298",
+      "name": "Made in IndiaRadhe Forged ProductsForged Gear Flange - Finish: MachinedPrice:350",
+      "price_min": 0.07,
+      "price_max": 36.84,
+      "currency": "USD",
+      "moq": 500,
+      "unit": null,
+      "supplier_name": "Radhe Forged Products",
+      "supplier_rating": 4.2,
+      "supplier_location_raw": "India",
+      "verified_supplier": true,
+      "response_rate": 79.1,
+      "certifications": [],
+      "keywords": [
+        "agriculture",
+        "made",
+        "indiaradhe",
+        "forged"
+      ],
+      "category": "Agriculture",
+      "subcategory": null,
+      "description": "Lubrication Type - RUST PREVENTIVE; Material - ALLOY STEEL / HIGH STRENGTH LLOY STEEL; Weight - 7  Kilograms (kg)",
+      "listing_url": "https://www.tradeindia.com/products/gear-flange-c10522298.html",
+      "scraped_at": 1780157031.3144493,
+      "supplier_city": "India",
+      "supplier_state": null,
+      "supplier_region": null,
+      "supplier_country": null,
+      "supplier_location": "Indore, Madhya Pradesh, India",
+      "supplier_tier": "Gold",
+      "quality_score": 92.9,
+      "original_currency": "INR",
+      "original_price_min": 7.0,
+      "original_price_max": 3500.0
+    }
+  ]
+};
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+<script>
+Chart.defaults.color = '#9ca3af';
+Chart.defaults.borderColor = '#1f2937';
+Chart.defaults.font.family = "'Inter', system-ui, sans-serif";
+Chart.register(ChartDataLabels);
+
+const CAT_COLORS = {
+  "Industrial Machinery": "#8b5cf6",
+  "Electronics": "#06b6d4",
+  "Textiles": "#f59e0b",
+  "Chemicals": "#10b981",
+  "Agriculture": "#f97316"
+};
+
+const CAT_COLORS_OBJ = [
+  { label: "Industrial Machinery", color: "#8b5cf6", bg: "rgba(139,92,246,0.3)" },
+  { label: "Electronics", color: "#06b6d4", bg: "rgba(6,182,212,0.3)" },
+  { label: "Textiles", color: "#f59e0b", bg: "rgba(245,158,11,0.3)" },
+  { label: "Chemicals", color: "#10b981", bg: "rgba(16,185,129,0.3)" },
+  { label: "Agriculture", color: "#f97316", bg: "rgba(249,115,22,0.3)" }
+];
+
+function fmt(val) {
+  return val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function fmt$(val) {
+  return '$' + fmt(val) + ' USD';
+}
+
+function createGradient(ctx, chartArea, color1, color2) {
+  const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
+  gradient.addColorStop(0, color1);
+  gradient.addColorStop(1, color2);
+  return gradient;
+}
+
+function getCatColor(cat) {
+  return CAT_COLORS[cat] || '#6b7280';
+}
+</script>
+
+<script>
+function initCitiesChart() {
+  const ctx = document.getElementById('chart-cities').getContext('2d');
+  const counts = {};
+  DATA.products.forEach(p => { const c = p.supplier_city; counts[c] = (counts[c] || 0) + 1; });
+  const sorted = Object.entries(counts).sort((a,b) => b[1] - a[1]).slice(0, 10);
+  const labels = sorted.map(s => s[0]);
+  const values = sorted.map(s => s[1]);
+
+  const g = ctx.createLinearGradient(0, 300, 0, 0);
+  g.addColorStop(0, 'rgba(139,92,246,0.1)');
+  g.addColorStop(1, 'rgba(139,92,246,0.9)');
+
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Suppliers',
+        data: values,
+        backgroundColor: values.map((_, i) => {
+          const r = ctx.createLinearGradient(i*40, 300, i*40+30, 0);
+          r.addColorStop(0, 'rgba(139,92,246,0.2)');
+          r.addColorStop(1, `rgba(${139 + i*10},${92 - i*8},${246},${0.8 - i*0.05})`);
+          return r;
+        }),
+        borderColor: '#8b5cf6',
+        borderWidth: 1,
+        borderRadius: 4
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      indexAxis: 'y',
+      plugins: {
+        legend: { display: false },
+        datalabels: { anchor: 'end', align: 'end', color: '#d1d5db', font: { weight: 'bold', size: 11 } },
+        tooltip: {
+          backgroundColor: '#1f2937', titleColor: '#f3f4f6', bodyColor: '#d1d5db',
+          borderColor: '#374151', borderWidth: 1, cornerRadius: 8,
+          callbacks: { label: ctx => ctx.parsed.y + ' suppliers' }
+        }
+      },
+      scales: {
+        x: { grid: { color: '#1f2937' }, beginAtZero: true },
+        y: { grid: { display: false } }
+      }
+    }
+  });
+}
+
+function initHeatmap() {
+  const stateData = {};
+  DATA.products.forEach(p => {
+    const s = p.supplier_state;
+    if (!stateData[s]) stateData[s] = { count: 0, prices: [], ratings: [], cats: {} };
+    stateData[s].count++;
+    stateData[s].prices.push((p.price_min + p.price_max) / 2);
+    stateData[s].ratings.push(p.supplier_rating);
+    stateData[s].cats[p.category] = (stateData[s].cats[p.category] || 0) + 1;
+  });
+
+  const entries = Object.entries(stateData).sort((a,b) => b[1].count - a[1].count);
+  const maxCount = entries[0]?.[1].count || 1;
+  const tbody = document.getElementById('heatmap-body');
+
+  entries.forEach(([state, data]) => {
+    const avgPrice = data.prices.reduce((a,b) => a+b, 0) / data.prices.length;
+    const avgRating = data.ratings.reduce((a,b) => a+b, 0) / data.ratings.length;
+    const topCat = Object.entries(data.cats).sort((a,b) => b[1] - a[1])[0][0];
+    const density = data.count / maxCount;
+    let heatColor;
+    if (density > 0.6) heatColor = '#065f46';
+    else if (density > 0.3) heatColor = '#78350f';
+    else heatColor = '#1f2937';
+
+    const barW = Math.round(density * 100);
+    tbody.innerHTML += `<tr class="border-b border-gray-800 hover:bg-gray-800/40"><td class="p-2">${state}</td><td class="text-right p-2 font-medium">${data.count}</td><td class="text-right p-2">$${avgPrice.toFixed(0)}</td><td class="text-right p-2">${avgRating.toFixed(1)}</td><td class="p-2 text-gray-400">${topCat}</td><td class="text-center p-2"><div class="inline-block h-4 rounded" style="width:${barW}px;background:${heatColor}"></div><span class="ml-1.5 text-gray-500">${(density*100).toFixed(0)}%</span></td></tr>`;
+  });
+}
+
+function initRegionCategoryChart() {
+  const ctx = document.getElementById('chart-region-category').getContext('2d');
+  const regions = ['North India','West India','South India','East India','Central India','Northeast India'];
+  const cats = Object.keys(CAT_COLORS);
+
+  const data = {};
+  regions.forEach(r => { data[r] = {}; cats.forEach(c => { data[r][c] = 0; }); });
+  DATA.products.forEach(p => {
+    if (data[p.supplier_region] && data[p.supplier_region][p.category] !== undefined) {
+      data[p.supplier_region][p.category]++;
+    }
+  });
+
+  const datasets = cats.map(c => ({
+    label: c,
+    data: regions.map(r => data[r][c]),
+    backgroundColor: CAT_COLORS[c] + 'CC',
+    borderColor: CAT_COLORS[c],
+    borderWidth: 1
+  }));
+
+  new Chart(ctx, {
+    type: 'bar',
+    data: { labels: regions, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom', labels: { color: '#9ca3af', padding: 12, font: { size: 10 } } },
+        datalabels: { display: false },
+        tooltip: {
+          backgroundColor: '#1f2937', titleColor: '#f3f4f6', bodyColor: '#d1d5db',
+          borderColor: '#374151', borderWidth: 1, cornerRadius: 8,
+          callbacks: { label: ctx => ctx.dataset.label + ': ' + ctx.parsed.y + ' products' }
+        }
+      },
+      scales: {
+        x: { stacked: true, grid: { display: false }, ticks: { font: { size: 10 } } },
+        y: { stacked: true, grid: { color: '#1f2937' }, beginAtZero: true }
+      }
+    }
+  });
+}
+
+function initRanking() {
+  const stateData = {};
+  DATA.products.forEach(p => {
+    const s = p.supplier_state;
+    if (!stateData[s]) stateData[s] = { count: 0, prices: [], ratings: [], gold: 0 };
+    stateData[s].count++;
+    stateData[s].prices.push((p.price_min + p.price_max) / 2);
+    stateData[s].ratings.push(p.supplier_rating);
+    if (p.supplier_tier === 'Gold') stateData[s].gold++;
+  });
+
+  const entries = Object.entries(stateData).sort((a,b) => b[1].count - a[1].count).slice(0, 15);
+  const tbody = document.getElementById('ranking-body');
+  const medals = ['fa-trophy text-amber-400', 'fa-medal text-gray-400', 'fa-medal text-amber-700'];
+
+  entries.forEach(([state, data], i) => {
+    const avgPrice = data.prices.reduce((a,b) => a+b, 0) / data.prices.length;
+    const avgRating = data.ratings.reduce((a,b) => a+b, 0) / data.ratings.length;
+    const icon = i < 3 ? `<i class="fas ${medals[i]}"></i>` : (i + 1);
+    tbody.innerHTML += `<tr class="border-b border-gray-800 hover:bg-gray-800/40"><td class="text-center p-2">${icon}</td><td class="p-2 font-medium">${state}</td><td class="text-right p-2">${data.count}</td><td class="text-right p-2">$${avgPrice.toFixed(0)}</td><td class="text-right p-2">${avgRating.toFixed(1)}</td><td class="text-center p-2"><span class="badge-gold px-2 py-0.5 rounded text-xs">${data.gold}</span></td></tr>`;
+  });
+}
+
+initCitiesChart();
+initHeatmap();
+initRegionCategoryChart();
+initRanking();
+</script>
+
+<script>
+document.querySelectorAll('.nav-link').forEach(a => {
+  const page = a.getAttribute('data-page');
+  const current = location.pathname.split('/').pop();
+  if ((current === 'index.html' || current === '' || current === page + '.html') && a.href.includes(page)) {
+    a.classList.add('bg-purple-600/20', 'text-purple-300', 'border-purple-500');
+  } else {
+    a.classList.add('text-gray-400', 'hover:text-gray-200', 'hover:bg-gray-800');
+  }
+  a.classList.add('px-3', 'py-2', 'rounded-lg', 'text-sm', 'font-medium', 'transition-colors', 'border', 'border-transparent');
+});
+</script>
+
+<script>
+document.getElementById('product-count-footer').textContent = DATA.products.length;
+</script>
+</body>
+</html>

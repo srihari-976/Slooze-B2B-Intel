@@ -1,0 +1,42 @@
+# Core dependencies
+requests
+beautifulsoup4
+fake-useragent
+
+# AI Extraction — Ollama (default, no API key needed)
+#   Install Ollama from https://ollama.com then:
+#     ollama pull qwen2.5:7b
+# AI Extraction — Anthropic (optional, requires ANTHROPIC_API_KEY)
+# anthropic>=0.7.0
+python-dotenv
+
+# Data Validation
+pydantic
+
+# ETL
+pandas
+numpy
+# spaCy model required: python -m spacy download en_core_web_sm
+spacy
+forex-python
+
+# Storage
+pyarrow
+
+# EDA & Visualization
+matplotlib
+seaborn
+plotly
+wordcloud
+
+# ML
+scikit-learn
+gensim
+
+# Airflow (optional, for orchestration)
+# apache-airflow>=2.5.0
+# apache-airflow-providers-postgres>=8.0.0
+# psycopg2-binary>=2.9.0
+
+# Development & testing
+pytest

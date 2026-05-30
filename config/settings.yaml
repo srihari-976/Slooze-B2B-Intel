@@ -1,0 +1,111 @@
+# Configuration settings for the B2B Marketplace Crawler
+
+# Crawler Settings
+crawler:
+  rate_limit: 2.0  # Seconds between requests
+  max_retries: 3
+  timeout: 10  # Seconds
+  user_agents:
+    - "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+    - "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+    - "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+  
+  # Target sites
+  targets:
+    indiamart:
+      base_url: "https://www.indiamart.com"
+      enabled: true
+    tradeindia:
+      base_url: "https://www.tradeindia.com"
+      enabled: true
+
+# AI Extraction Settings
+ai_extraction:
+  # Provider: "auto" | "anthropic" | "ollama"
+  #   auto = use anthropic if ANTHROPIC_API_KEY is set, otherwise ollama
+  provider: "auto"
+  max_tokens: 2000
+  temperature: 0.1
+
+  # Anthropic-specific
+  anthropic_model: "claude-3-sonnet-20240229"
+  # API key should be set in environment variable ANTHROPIC_API_KEY
+
+  # Ollama-specific  (default when no Anthropic key is available)
+  ollama_model: "qwen2.5:7b"
+  ollama_base_url: "http://localhost:11434"
+  ollama_timeout: 60
+
+# ETL Settings
+etl:
+  deduplication:
+    name_threshold: 0.85
+    supplier_threshold: 0.8
+  
+  normalization:
+    target_currency: "USD"
+    # Currency conversion rates (if not using live forex)
+    # These are approximate rates
+    currency_rates:
+      INR: 0.012  # 1 INR = 0.012 USD
+      CNY: 0.14   # 1 CNY = 0.14 USD
+      EUR: 1.08   # 1 EUR = 1.08 USD
+      GBP: 1.25   # 1 GBP = 1.25 USD
+      JPY: 0.0067 # 1 JPY = 0.0067 USD
+  
+  nlp:
+    model: "en_core_web_sm"
+    
+  geo:
+    # Indian states and regions mapping is built into the geo_enricher module
+
+# Warehouse Settings
+warehouse:
+  sqlite:
+    path: "data/warehouse.db"
+  parquet:
+    path: "data/warehouse.parquet"
+  
+  # Backup settings
+  backup_enabled: true
+  backup_interval_hours: 24
+
+# EDA Settings
+eda:
+  sample_size: 1000  # Number of records to load for analysis
+  chart_format: "png"
+  chart_dpi: 300
+  figsize_width: 12
+  figsize_height: 8
+
+# ML Settings
+ml:
+  random_state: 42
+  test_size: 0.2
+  n_estimators: 100  # For Random Forest
+  contamination: 0.1  # For Isolation Forest (anomaly detection)
+  n_topics: 5  # For LDA topic modeling
+
+# Airflow Settings (for production deployment)
+airflow:
+  schedule_interval: "0 */6 * * *"  # Every 6 hours
+  retries: 1
+  retry_delay_minutes: 5
+  email_on_failure: false
+  email_on_retry: false
+
+# Logging Settings
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "logs/pipeline.log"
+  max_size_mb: 10
+  backup_count: 5
+
+# Docker Settings
+docker:
+  image_name: "slooze-challenge"
+  tag: "latest"
+  build_context: "."
+  ports:
+    - "8080:8080"  # For potential web dashboard

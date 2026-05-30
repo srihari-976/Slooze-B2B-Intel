@@ -1,0 +1,125 @@
+version: '3.8'
+
+services:
+  # Airflow services for orchestration
+  postgres:
+    image: postgres:13
+    environment:
+      - POSTGRES_USER=airflow
+      - POSTGRES_PASSWORD=airflow
+      - POSTGRES_DB=airflow
+    volumes:
+      - postgres_db_volume:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "airflow"]
+      interval: 5s
+      retries: 5
+
+  airflow-webserver:
+    image: apache/airflow:2.5.0-python3.9
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./logs:/opt/airflow/logs
+      - ./plugins:/opt/airflow/plugins
+      - ./config:/opt/airflow/config
+    environment:
+      - AIRFLOW__CORE_EXECUTOR=LocalExecutor
+      - AIRFLOW__CORE_SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/airflow
+      - AIRFLOW__CORE_FERNET_KEY=
+      - AIRFLOW__CORE_LOAD_EXAMPLES=False
+      - AIRFLOW__CORE_LOAD_DEFAULT_CONNECTIONS=False
+      - _PIP_ADDITIONAL_REQUIREMENTS=apache-airflow-providers-postgres
+    ports:
+      - "8080:8080"
+    command: webserver
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  airflow-scheduler:
+    image: apache/airflow:2.5.0-python3.9
+    depends_on:
+      airflow-webserver:
+        condition: service_healthy
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./logs:/opt/airflow/logs
+      - ./plugins:/opt/airflow/plugins
+      - ./config:/opt/airflow/config
+    environment:
+      - AIRFLOW__CORE_EXECUTOR=LocalExecutor
+      - AIRFLOW__CORE_SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/airflow
+      - AIRFLOW__CORE_FERNET_KEY=
+      - AIRFLOW__CORE_LOAD_EXAMPLES=False
+      - AIRFLOW__CORE_LOAD_DEFAULT_CONNECTIONS=False
+      - _PIP_ADDITIONAL_REQUIREMENTS=apache-airflow-providers-postgres
+    command: scheduler
+
+  airflow-triggerer:
+    image: apache/airflow:2.5.0-python3.9
+    depends_on:
+      airflow-scheduler:
+        condition: service_healthy
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./logs:/opt/airflow/logs
+      - ./plugins:/opt/airflow/plugins
+      - ./config:/opt/airflow/config
+    environment:
+      - AIRFLOW__CORE_EXECUTOR=LocalExecutor
+      - AIRFLOW__CORE_SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/airflow
+      - AIRFLOW__CORE_FERNET_KEY=
+      - AIRFLOW__CORE_LOAD_EXAMPLES=False
+      - AIRFLOW__CORE_LOAD_DEFAULT_CONNECTIONS=False
+      - _PIP_ADDITIONAL_REQUIREMENTS=apache-airflow-providers-postgres
+    command: triggerer
+
+  airflow-init:
+    image: apache/airflow:2.5.0-python3.9
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./logs:/opt/airflow/logs
+      - ./plugins:/opt/airflow/plugins
+      - ./config:/opt/airflow/config
+    environment:
+      - AIRFLOW__CORE_EXECUTOR=LocalExecutor
+      - AIRFLOW__CORE_SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/airflow
+      - AIRFLOW__CORE_FERNET_KEY=
+      - AIRFLOW__CORE_LOAD_EXAMPLES=False
+      - AIRFLOW__CORE_LOAD_DEFAULT_CONNECTIONS=False
+      - _PIP_ADDITIONAL_REQUIREMENTS=apache-airflow-providers-postgres
+    entrypoint: /bin/bash
+    command: >
+      -c "airflow users create
+        --username admin
+        --firstname Admin
+        --lastname User
+        --role Admin
+        --email admin@example.com
+        --password admin
+        && airflow db init"
+
+  # Service for running the crawler and ETL pipeline directly
+  crawler-etl:
+    build: .
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./config:/app/config
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+    depends_on:
+      - postgres
+    command: >
+      -c "python -m crawler.indiamart_crawler"
+
+volumes:
+  postgres_db_volume:
