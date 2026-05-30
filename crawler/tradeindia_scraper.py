@@ -63,7 +63,7 @@ def scrape_product_detail(product_url):
 
         city_elem = soup.find('span', class_=lambda c: c and 'city' in str(c) if c else False)
         if not city_elem:
-            city_elem = soup.find(text=re.compile(r'(Mumbai|Delhi|Bangalore|Chennai|Hyderabad|Pune|Kolkata|Ahmedabad|Jaipur|Surat|Lucknow|Indore)'))
+            city_elem = soup.find(string=re.compile(r'(Mumbai|Delhi|Bangalore|Chennai|Hyderabad|Pune|Kolkata|Ahmedabad|Jaipur|Surat|Lucknow|Indore)'))
         if city_elem:
             data['supplier_location_raw'] = city_elem.strip() if isinstance(city_elem, str) else city_elem.parent.get_text(strip=True)[:50] if city_elem.parent else None
 

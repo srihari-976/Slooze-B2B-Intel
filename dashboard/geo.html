@@ -746,7 +746,7 @@ function getCatColor(cat) {
 function initCitiesChart() {
   const ctx = document.getElementById('chart-cities').getContext('2d');
   const counts = {};
-  DATA.products.forEach(p => { const c = p.supplier_city; counts[c] = (counts[c] || 0) + 1; });
+  DATA.products.forEach(p => { const c = p.supplier_city || 'Unknown'; counts[c] = (counts[c] || 0) + 1; });
   const sorted = Object.entries(counts).sort((a,b) => b[1] - a[1]).slice(0, 10);
   const labels = sorted.map(s => s[0]);
   const values = sorted.map(s => s[1]);
@@ -796,11 +796,11 @@ function initCitiesChart() {
 function initHeatmap() {
   const stateData = {};
   DATA.products.forEach(p => {
-    const s = p.supplier_state;
+    const s = p.supplier_state || 'Unknown';
     if (!stateData[s]) stateData[s] = { count: 0, prices: [], ratings: [], cats: {} };
     stateData[s].count++;
-    stateData[s].prices.push((p.price_min + p.price_max) / 2);
-    stateData[s].ratings.push(p.supplier_rating);
+    stateData[s].prices.push(((p.price_min || 0) + (p.price_max || 0)) / 2);
+    stateData[s].ratings.push(p.supplier_rating || 0);
     stateData[s].cats[p.category] = (stateData[s].cats[p.category] || 0) + 1;
   });
 
@@ -869,7 +869,7 @@ function initRegionCategoryChart() {
 function initRanking() {
   const stateData = {};
   DATA.products.forEach(p => {
-    const s = p.supplier_state;
+    const s = p.supplier_state || 'Unknown';
     if (!stateData[s]) stateData[s] = { count: 0, prices: [], ratings: [], gold: 0 };
     stateData[s].count++;
     stateData[s].prices.push((p.price_min + p.price_max) / 2);

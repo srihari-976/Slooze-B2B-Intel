@@ -15,6 +15,16 @@ elif isinstance(data, dict) and 'products' in data:
 else:
     products = data
 
+# Compute max price for slider
+all_prices = []
+for p in products:
+    lo = p.get('price_min') or 0
+    hi = p.get('price_max') or 0
+    all_prices.append((lo + hi) / 2)
+max_price = max(all_prices) if all_prices else 50000
+# Round up to nearest 1000, min 50000
+max_price = max(50000, int((max_price // 1000 + 1) * 1000))
+
 # Build DATA object
 data_js = "const DATA = " + json.dumps({"products": products}, indent=2) + ";"
 
@@ -208,7 +218,7 @@ function initKPI() {
   const verifiedCount = prods.filter(p => p.verified_supplier).length;
   const verifiedPct = (verifiedCount / total * 100);
   const dupCount = Math.round(total * 0.042);
-  const avgPrice = prods.reduce((s,p) => s + (p.price_min + p.price_max) / 2, 0) / total;
+  const avgPrice = prods.filter(p => p.price_min != null && p.price_max != null).reduce((s,p) => s + (p.price_min + p.price_max) / 2, 0) / prods.filter(p => p.price_min != null && p.price_max != null).length || 0;
 
   const kpis = [
     { icon: 'fa-boxes', label: 'Total Products', value: total.toLocaleString(), accent: 'border-l-purple-500', iconBg: 'bg-purple-500/20', iconColor: 'text-purple-400' },
@@ -277,7 +287,7 @@ function initCategoryChart() {
 function initRegionChart() {
   const ctx = document.getElementById('chart-region').getContext('2d');
   const counts = {};
-  DATA.products.forEach(p => { const r = p.supplier_region; counts[r] = (counts[r] || 0) + 1; });
+  DATA.products.forEach(p => { const r = p.supplier_region || 'Unknown'; counts[r] = (counts[r] || 0) + 1; });
   const labels = Object.keys(counts);
   const values = Object.values(counts);
   const total = values.reduce((a,b) => a+b, 0);
@@ -465,7 +475,7 @@ GEO_SCRIPT = r'''
 function initCitiesChart() {
   const ctx = document.getElementById('chart-cities').getContext('2d');
   const counts = {};
-  DATA.products.forEach(p => { const c = p.supplier_city; counts[c] = (counts[c] || 0) + 1; });
+  DATA.products.forEach(p => { const c = p.supplier_city || 'Unknown'; counts[c] = (counts[c] || 0) + 1; });
   const sorted = Object.entries(counts).sort((a,b) => b[1] - a[1]).slice(0, 10);
   const labels = sorted.map(s => s[0]);
   const values = sorted.map(s => s[1]);
@@ -515,11 +525,11 @@ function initCitiesChart() {
 function initHeatmap() {
   const stateData = {};
   DATA.products.forEach(p => {
-    const s = p.supplier_state;
+    const s = p.supplier_state || 'Unknown';
     if (!stateData[s]) stateData[s] = { count: 0, prices: [], ratings: [], cats: {} };
     stateData[s].count++;
-    stateData[s].prices.push((p.price_min + p.price_max) / 2);
-    stateData[s].ratings.push(p.supplier_rating);
+    stateData[s].prices.push(((p.price_min || 0) + (p.price_max || 0)) / 2);
+    stateData[s].ratings.push(p.supplier_rating || 0);
     stateData[s].cats[p.category] = (stateData[s].cats[p.category] || 0) + 1;
   });
 
@@ -588,7 +598,7 @@ function initRegionCategoryChart() {
 function initRanking() {
   const stateData = {};
   DATA.products.forEach(p => {
-    const s = p.supplier_state;
+    const s = p.supplier_state || 'Unknown';
     if (!stateData[s]) stateData[s] = { count: 0, prices: [], ratings: [], gold: 0 };
     stateData[s].count++;
     stateData[s].prices.push((p.price_min + p.price_max) / 2);
@@ -638,12 +648,12 @@ products_html = make_head("Products") + NAVBAR + '''
       <div><label class="block text-xs text-gray-500 mb-1">Tier</label><select id="filter-tier" class="w-36"><option value="">All Tiers</option><option value="Gold">Gold</option><option value="Silver">Silver</option><option value="Unverified">Unverified</option></select></div>
       <div><label class="block text-xs text-gray-500 mb-1">City</label><input type="text" id="filter-city" placeholder="Search city..." class="w-36"></div>
       <div class="flex-1 min-w-[180px]">
-        <label class="block text-xs text-gray-500 mb-1">Price Range: <span id="price-labels">$0 - $50,000</span></label>
+        <label class="block text-xs text-gray-500 mb-1">Price Range: <span id="price-labels">$0 - $__MAX_PRICE_LABEL__</span></label>
         <div class="dual-range">
           <div class="range-track"></div>
           <div class="range-fill" id="range-fill"></div>
-          <input type="range" id="price-min" min="0" max="50000" value="0" step="100">
-          <input type="range" id="price-max" min="0" max="50000" value="50000" step="100">
+          <input type="range" id="price-min" min="0" max="__MAX_PRICE__" value="0" step="__STEP__">
+          <input type="range" id="price-max" min="0" max="__MAX_PRICE__" value="__MAX_PRICE__" step="__STEP__">
         </div>
       </div>
       <div class="pt-4"><label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="filter-verified" class="w-4 h-4 rounded accent-purple-500"><span class="text-xs text-gray-400">Verified Only</span></label></div>
@@ -713,8 +723,9 @@ function updateRange() {
   }
   const vMin = parseInt(priceMin.value);
   const vMax = parseInt(priceMax.value);
-  const pctMin = (vMin / 50000) * 100;
-  const pctMax = (vMax / 50000) * 100;
+  const sliderMax = parseInt(priceMin.max);
+  const pctMin = (vMin / sliderMax) * 100;
+  const pctMax = (vMax / sliderMax) * 100;
   rangeFill.style.left = pctMin + '%';
   rangeFill.style.width = (pctMax - pctMin) + '%';
   priceLabels.textContent = '$' + vMin.toLocaleString() + ' - $' + vMax.toLocaleString();
@@ -735,7 +746,7 @@ function getFiltered() {
   return DATA.products.filter(p => {
     if (cat && p.category !== cat) return false;
     if (tier && p.supplier_tier !== tier) return false;
-    if (city && !p.supplier_city.toLowerCase().includes(city)) return false;
+    if (city && !(p.supplier_city || '').toLowerCase().includes(city)) return false;
     const avg = (p.price_min + p.price_max) / 2;
     if (avg < pMin || avg > pMax) return false;
     if (verifiedOnly && !p.verified_supplier) return false;
@@ -758,7 +769,7 @@ document.getElementById('reset-filters').addEventListener('click', () => {
   document.getElementById('filter-tier').value = '';
   document.getElementById('filter-city').value = '';
   priceMin.value = 0;
-  priceMax.value = 50000;
+  priceMax.value = parseInt(priceMax.max);
   document.getElementById('filter-verified').checked = false;
   updateRange();
 });
@@ -779,7 +790,7 @@ function renderTable(products) {
       { data: 'name', render: d => '<div class="font-medium text-gray-200" style="max-width:260px">' + d + '</div>' },
       { data: 'category', render: d => '<span class="text-xs px-2 py-0.5 rounded" style="background:' + getCatColor(d) + '22;color:' + getCatColor(d) + '">' + d + '</span>' },
       { data: null, render: p => '<span class="font-mono">' + fmt$((p.price_min + p.price_max)/2) + '</span>' },
-      { data: 'supplier_city', render: d => '<span class="text-gray-400">' + d + '</span>' },
+      { data: 'supplier_city', render: d => '<span class="text-gray-400">' + (d || '—') + '</span>' },
       { data: 'supplier_tier', render: d => tierBadge(d) },
       { data: 'supplier_rating', render: d => '<span class="text-amber-400 text-xs">' + '★'.repeat(Math.round(d)) + '☆'.repeat(5-Math.round(d)) + '</span>' },
       { data: 'verified_supplier', render: d => d ? '<i class="fas fa-check-circle text-emerald-400"></i>' : '<i class="fas fa-times-circle text-gray-600"></i>' }
@@ -800,7 +811,8 @@ function renderTable(products) {
 function updateCharts(products) {
   // Price distribution histogram
   if (priceChart) { priceChart.destroy(); priceChart = null; }
-  const bins = [0, 100, 500, 1000, 5000, 10000, 50000];
+  const sliderMax = parseInt(document.getElementById('price-max').max);
+  const bins = [0, 100, 500, 1000, 5000, 10000, sliderMax];
   const binLabels = ['$0-100','$100-500','$500-1K','$1K-5K','$5K-10K','$10K+'];
   const catList = Object.keys(CAT_COLORS);
   const binData = {};
@@ -854,7 +866,7 @@ function updateCharts(products) {
       x: p.moq,
       y: (p.price_min + p.price_max) / 2,
       name: p.name,
-      city: p.supplier_city
+      city: p.supplier_city || 'N/A'
     })),
     backgroundColor: CAT_COLORS[c] + 'CC',
     borderColor: CAT_COLORS[c],
@@ -899,6 +911,12 @@ document.getElementById('product-count-footer').textContent = DATA.products.leng
 </script>
 </body>
 </html>'''
+
+# Inject dynamic max price and step into products HTML
+step = max(1, max_price // 500)
+products_html = products_html.replace('__MAX_PRICE__', str(max_price))
+products_html = products_html.replace('__STEP__', str(step))
+products_html = products_html.replace('__MAX_PRICE_LABEL__', f'{max_price:,}')
 
 with open(os.path.join(BASE_DIR, 'products.html'), 'w', encoding='utf-8') as f:
     f.write(products_html)

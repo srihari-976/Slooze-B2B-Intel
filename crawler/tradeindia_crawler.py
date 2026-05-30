@@ -123,7 +123,7 @@ class TradeIndiaCrawler(BaseCrawler):
             detail['price_raw'] = price_text
             
             # MOQ (Minimum Order Quantity)
-            moq_elem = soup.find(text=re.compile(r'MOQ|Minimum Order', re.I))
+            moq_elem = soup.find(string=re.compile(r'MOQ|Minimum Order', re.I))
             if moq_elem:
                 # Find the parent or next element that contains the value
                 parent = moq_elem.parent if hasattr(moq_elem, 'parent') else None
@@ -135,7 +135,7 @@ class TradeIndiaCrawler(BaseCrawler):
                     detail['moq_raw'] = moq_text
             
             # Unit
-            unit_elem = soup.find(text=re.compile(r'Unit|Packaging', re.I))
+            unit_elem = soup.find(string=re.compile(r'Unit|Packaging', re.I))
             if unit_elem:
                 parent = unit_elem.parent if hasattr(unit_elem, 'parent') else None
                 if parent:
@@ -170,7 +170,7 @@ class TradeIndiaCrawler(BaseCrawler):
                     detail['supplier_rating'] = None
             
             # Response rate
-            response_elem = soup.find(text=re.compile(r'Response Rate', re.I))
+            response_elem = soup.find(string=re.compile(r'Response Rate', re.I))
             if response_elem:
                 parent = response_elem.parent if hasattr(response_elem, 'parent') else None
                 if parent:
@@ -185,7 +185,7 @@ class TradeIndiaCrawler(BaseCrawler):
                         detail['response_rate'] = None
             
             # Verified supplier badge
-            verified_elem = soup.find(text=re.compile(r'Verified|Trusted', re.I))
+            verified_elem = soup.find(string=re.compile(r'Verified|Trusted', re.I))
             detail['verified_supplier'] = verified_elem is not None
             
             # Scraped timestamp

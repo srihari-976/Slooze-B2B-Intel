@@ -757,7 +757,7 @@ function initKPI() {
   const verifiedCount = prods.filter(p => p.verified_supplier).length;
   const verifiedPct = (verifiedCount / total * 100);
   const dupCount = Math.round(total * 0.042);
-  const avgPrice = prods.reduce((s,p) => s + (p.price_min + p.price_max) / 2, 0) / total;
+  const avgPrice = prods.filter(p => p.price_min != null && p.price_max != null).reduce((s,p) => s + (p.price_min + p.price_max) / 2, 0) / prods.filter(p => p.price_min != null && p.price_max != null).length || 0;
 
   const kpis = [
     { icon: 'fa-boxes', label: 'Total Products', value: total.toLocaleString(), accent: 'border-l-purple-500', iconBg: 'bg-purple-500/20', iconColor: 'text-purple-400' },
@@ -826,7 +826,7 @@ function initCategoryChart() {
 function initRegionChart() {
   const ctx = document.getElementById('chart-region').getContext('2d');
   const counts = {};
-  DATA.products.forEach(p => { const r = p.supplier_region; counts[r] = (counts[r] || 0) + 1; });
+  DATA.products.forEach(p => { const r = p.supplier_region || 'Unknown'; counts[r] = (counts[r] || 0) + 1; });
   const labels = Object.keys(counts);
   const values = Object.values(counts);
   const total = values.reduce((a,b) => a+b, 0);

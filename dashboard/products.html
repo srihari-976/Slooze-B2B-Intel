@@ -76,12 +76,12 @@
       <div><label class="block text-xs text-gray-500 mb-1">Tier</label><select id="filter-tier" class="w-36"><option value="">All Tiers</option><option value="Gold">Gold</option><option value="Silver">Silver</option><option value="Unverified">Unverified</option></select></div>
       <div><label class="block text-xs text-gray-500 mb-1">City</label><input type="text" id="filter-city" placeholder="Search city..." class="w-36"></div>
       <div class="flex-1 min-w-[180px]">
-        <label class="block text-xs text-gray-500 mb-1">Price Range: <span id="price-labels">$0 - $50,000</span></label>
+        <label class="block text-xs text-gray-500 mb-1">Price Range: <span id="price-labels">$0 - $56,000</span></label>
         <div class="dual-range">
           <div class="range-track"></div>
           <div class="range-fill" id="range-fill"></div>
-          <input type="range" id="price-min" min="0" max="50000" value="0" step="100">
-          <input type="range" id="price-max" min="0" max="50000" value="50000" step="100">
+          <input type="range" id="price-min" min="0" max="56000" value="0" step="112">
+          <input type="range" id="price-max" min="0" max="56000" value="56000" step="112">
         </div>
       </div>
       <div class="pt-4"><label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="filter-verified" class="w-4 h-4 rounded accent-purple-500"><span class="text-xs text-gray-400">Verified Only</span></label></div>
@@ -811,8 +811,9 @@ function updateRange() {
   }
   const vMin = parseInt(priceMin.value);
   const vMax = parseInt(priceMax.value);
-  const pctMin = (vMin / 50000) * 100;
-  const pctMax = (vMax / 50000) * 100;
+  const sliderMax = parseInt(priceMin.max);
+  const pctMin = (vMin / sliderMax) * 100;
+  const pctMax = (vMax / sliderMax) * 100;
   rangeFill.style.left = pctMin + '%';
   rangeFill.style.width = (pctMax - pctMin) + '%';
   priceLabels.textContent = '$' + vMin.toLocaleString() + ' - $' + vMax.toLocaleString();
@@ -833,7 +834,7 @@ function getFiltered() {
   return DATA.products.filter(p => {
     if (cat && p.category !== cat) return false;
     if (tier && p.supplier_tier !== tier) return false;
-    if (city && !p.supplier_city.toLowerCase().includes(city)) return false;
+    if (city && !(p.supplier_city || '').toLowerCase().includes(city)) return false;
     const avg = (p.price_min + p.price_max) / 2;
     if (avg < pMin || avg > pMax) return false;
     if (verifiedOnly && !p.verified_supplier) return false;
@@ -856,7 +857,7 @@ document.getElementById('reset-filters').addEventListener('click', () => {
   document.getElementById('filter-tier').value = '';
   document.getElementById('filter-city').value = '';
   priceMin.value = 0;
-  priceMax.value = 50000;
+  priceMax.value = parseInt(priceMax.max);
   document.getElementById('filter-verified').checked = false;
   updateRange();
 });
@@ -877,7 +878,7 @@ function renderTable(products) {
       { data: 'name', render: d => '<div class="font-medium text-gray-200" style="max-width:260px">' + d + '</div>' },
       { data: 'category', render: d => '<span class="text-xs px-2 py-0.5 rounded" style="background:' + getCatColor(d) + '22;color:' + getCatColor(d) + '">' + d + '</span>' },
       { data: null, render: p => '<span class="font-mono">' + fmt$((p.price_min + p.price_max)/2) + '</span>' },
-      { data: 'supplier_city', render: d => '<span class="text-gray-400">' + d + '</span>' },
+      { data: 'supplier_city', render: d => '<span class="text-gray-400">' + (d || '—') + '</span>' },
       { data: 'supplier_tier', render: d => tierBadge(d) },
       { data: 'supplier_rating', render: d => '<span class="text-amber-400 text-xs">' + '★'.repeat(Math.round(d)) + '☆'.repeat(5-Math.round(d)) + '</span>' },
       { data: 'verified_supplier', render: d => d ? '<i class="fas fa-check-circle text-emerald-400"></i>' : '<i class="fas fa-times-circle text-gray-600"></i>' }
@@ -898,7 +899,8 @@ function renderTable(products) {
 function updateCharts(products) {
   // Price distribution histogram
   if (priceChart) { priceChart.destroy(); priceChart = null; }
-  const bins = [0, 100, 500, 1000, 5000, 10000, 50000];
+  const sliderMax = parseInt(document.getElementById('price-max').max);
+  const bins = [0, 100, 500, 1000, 5000, 10000, sliderMax];
   const binLabels = ['$0-100','$100-500','$500-1K','$1K-5K','$5K-10K','$10K+'];
   const catList = Object.keys(CAT_COLORS);
   const binData = {};
@@ -952,7 +954,7 @@ function updateCharts(products) {
       x: p.moq,
       y: (p.price_min + p.price_max) / 2,
       name: p.name,
-      city: p.supplier_city
+      city: p.supplier_city || 'N/A'
     })),
     backgroundColor: CAT_COLORS[c] + 'CC',
     borderColor: CAT_COLORS[c],
